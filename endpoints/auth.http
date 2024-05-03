@@ -4,11 +4,10 @@
 ###
 POST {{baseUrl}}/{{urlPath}}/signin
 Content-Type: application/json
-Accept: application/json
-withCredentials: true
+Accept: application/jsonwithCredentials: true
 
 {
-  "username":"fahad",
+  "username":"Fahad",
   "password":"fahad"
 }
 

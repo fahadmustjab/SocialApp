@@ -11,8 +11,8 @@ class RedisConnection extends BaseCache {
   async connect(): Promise<void> {
     try {
       await this.client.connect();
-      const res = await this.client.ping();
-      console.log(res);
+      await this.client.ping();
+      log.info('Redis Connection Eastablished');
     } catch (error) {
       log.error(error);
     }

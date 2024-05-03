@@ -1,30 +1,49 @@
+import { config } from '@root/config';
 import { IUserDocument } from '@user/interfaces/user.interface';
 import { UserModel } from '@user/schema/user.schema';
+import Logger from 'bunyan';
 import mongoose from 'mongoose';
 
+
+const log: Logger = config.createLogger('userService');
 export class UserService {
 
   public async createUser(data: IUserDocument): Promise<IUserDocument> {
-    return await UserModel.create(data);
+    try {
+      return await UserModel.create(data);
+    } catch (error) {
+      log.error(error);
+      throw error;
+    }
   }
 
   public async getUserById(id: string): Promise<IUserDocument> {
-    const [users] = await UserModel.aggregate([
-      { $match: { _id: new mongoose.Types.ObjectId(id) } },
-      { $lookup: { from: 'Auth', localField: 'authId', foreignField: '_id', as: 'authId' } },
-      { $unwind: '$authId' },
-      { $project: this.aggregateProject() }
-    ]);
-    return users;
+    try {
+      const [users] = await UserModel.aggregate([
+        { $match: { _id: new mongoose.Types.ObjectId(id) } },
+        { $lookup: { from: 'Auth', localField: 'authId', foreignField: '_id', as: 'authId' } },
+        { $unwind: '$authId' },
+        { $project: this.aggregateProject() }
+      ]);
+      return users;
+    } catch (error) {
+      log.error(error);
+      throw error;
+    }
   }
   public async getUserByAuthId(authId: string): Promise<IUserDocument> {
-    const [users] = await UserModel.aggregate([
-      { $match: { authId: new mongoose.Types.ObjectId(authId) } },
-      { $lookup: { from: 'Auth', localField: 'authId', foreignField: '_id', as: 'authId' } },
-      { $unwind: '$authId' },
-      { $project: this.aggregateProject() }
-    ]);
-    return users;
+    try {
+      const [users] = await UserModel.aggregate([
+        { $match: { authId: new mongoose.Types.ObjectId(authId) } },
+        { $lookup: { from: 'Auth', localField: 'authId', foreignField: '_id', as: 'authId' } },
+        { $unwind: '$authId' },
+        { $project: this.aggregateProject() }
+      ]);
+      return users;
+    } catch (error) {
+      log.error(error);
+      throw error;
+    }
   }
   private aggregateProject() {
     return {
