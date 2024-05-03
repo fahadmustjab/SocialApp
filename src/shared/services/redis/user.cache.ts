@@ -3,6 +3,7 @@ import { BaseCache } from './base.cache';
 import Logger from 'bunyan';
 import { config } from '@root/config';
 import { ServerError } from '@global/helpers/error-handler';
+import { Helpers } from '@global/helpers/helpers';
 const log: Logger = config.createLogger('redisConnection');
 
 
@@ -97,6 +98,33 @@ export class UserCache extends BaseCache {
       throw new ServerError('Server Error. Please Try Again');
     }
 
+  }
+  public async getUserFromCache(userId: string): Promise<IUserDocument | null> {
+    try {
+      if (!this.client.isOpen) {
+        await this.client.connect();
+      }
+      let response: IUserDocument = await this.client.HGETALL(`user:${userId}`) as unknown as IUserDocument;
+      response = this.parseResponse(response);
+      log.info(response);
+      return response;
 
+    } catch (error) {
+      log.error(error);
+      throw new ServerError('Server Error. Please Try Again');
+
+    }
+  }
+
+  private parseResponse(response: IUserDocument): IUserDocument {
+    const parsedResponse: Partial<IUserDocument> = {};
+    for (const key in response) {
+      if (Object.prototype.hasOwnProperty.call(response, key)) {
+        parsedResponse[key as keyof IUserDocument] = Helpers.parseJSON(`${response[key as keyof IUserDocument]}`);
+      }
+    }
+    return parsedResponse as IUserDocument;
   }
 }
+
+
