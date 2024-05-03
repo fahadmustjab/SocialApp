@@ -47,7 +47,7 @@ export class SignUp {
     }
 
     const userDataForCache: IUserDocument = SignUp.prototype.userData(authData, userObjectId);
-    log.info(result.secure_url);
+    log.info(result?.secure_url);
     userDataForCache.profilePicture = result.secure_url;
     await userCache.saveUserToCache(`${userObjectId}`, uId, userDataForCache);
     omit(userDataForCache, ['uId', 'username', 'email', 'avatarColor', 'password']);
