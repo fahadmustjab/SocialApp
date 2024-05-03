@@ -14,6 +14,8 @@ import applicationRoutes from '@root/routes';
 import Logger from 'bunyan';
 import { CustomError, IErrorResponse } from '@global/helpers/error-handler';
 const SERVER_PORT = 5000;
+import 'express-async-errors';
+
 const log: Logger = config.createLogger('server');
 export class ChatServer {
   private app: Application;
@@ -60,10 +62,12 @@ export class ChatServer {
     applicationRoutes(app);
   }
 
+
   private globalErrorHandler(app: Application): void {
     app.all('*', (req: Request, res: Response) => {
-      res.status(HTTP_STATUS.NOT_FOUND).json({ message: `${req.originalUrl} not found ` });
+      res.status(HTTP_STATUS.NOT_FOUND).json({ message: `${req.originalUrl} not found` });
     });
+
     app.use((error: IErrorResponse, _req: Request, res: Response, next: NextFunction) => {
       log.error(error);
       if (error instanceof CustomError) {
