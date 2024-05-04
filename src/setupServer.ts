@@ -13,6 +13,8 @@ import { createAdapter } from '@socket.io/redis-adapter';
 import applicationRoutes from '@root/routes';
 import Logger from 'bunyan';
 import { CustomError, IErrorResponse } from '@global/helpers/error-handler';
+import { SocketIOHandler } from '@socket/post';
+import 'express-async-errors';
 const SERVER_PORT = 5000;
 const log: Logger = config.createLogger('server');
 export class ChatServer {
@@ -105,5 +107,8 @@ export class ChatServer {
     });
   }
 
-  private socketIOConnections(io: Server): void { }
+  private socketIOConnections(io: Server): void {
+    const postSocket: SocketIOHandler = new SocketIOHandler(io);
+    postSocket.listen();
+  }
 }
