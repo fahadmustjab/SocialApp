@@ -14,6 +14,15 @@ export class AuthService {
       log.error(error);
     }
   }
+
+  public async updatePasswordToken(authId: string, token: string, tokenExpiration: number): Promise<IAuthDocument | unknown> {
+    try {
+      return await AuthModel.findOneAndUpdate({ _id: authId }, { passwordResetToken: token, passwordResetExpires: tokenExpiration });
+    } catch (error) {
+      log.error(error);
+    }
+  }
+
   public async getUserByUsernameOrEmail(username: string, email: string): Promise<IAuthDocument> {
     const query = {
       $or: [{ username: Helpers.firstLetterUppercase(username) }, { email: Helpers.lowerCase(email) }]
@@ -27,6 +36,16 @@ export class AuthService {
       $or: [{ username: Helpers.firstLetterUppercase(username) },]
     };
     const user: IAuthDocument = (await AuthModel.findOne(query).exec()) as IAuthDocument;
+    return user;
+  }
+
+  public async getAuthUserByEmail(email: string): Promise<IAuthDocument> {
+    const user: IAuthDocument = (await AuthModel.findOne({ email: Helpers.lowerCase(email) }).exec()) as IAuthDocument;
+    return user;
+  }
+  public async getUserByToken(token: string,): Promise<IAuthDocument> {
+
+    const user: IAuthDocument = (await AuthModel.findOne({ passwordResetToken: token, passwordResetExpires: { $gt: Date.now() } }).exec()) as IAuthDocument;
     return user;
   }
 }

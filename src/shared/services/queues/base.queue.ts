@@ -6,9 +6,10 @@ import Queue, { Job } from 'bull';
 import Logger from 'bunyan';
 import { IAuthJob } from '@auth/interfaces/auth.interface';
 import { IPostJobData } from '@post/interfaces/post.interface';
+import { IEmailJob } from '@user/interfaces/user.interface';
 
 let bullAdapters: BullAdapter[] = [];
-type IBaseJobData = | IAuthJob | IPostJobData;
+type IBaseJobData = IEmailJob | IAuthJob | IPostJobData;
 export let serverAdapter: ExpressAdapter;
 
 export abstract class BaseQueue {

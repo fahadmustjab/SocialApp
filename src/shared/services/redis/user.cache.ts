@@ -106,7 +106,6 @@ export class UserCache extends BaseCache {
       }
       let response: IUserDocument = await this.client.HGETALL(`users:${userId}`) as unknown as IUserDocument;
       response = this.parseResponse(response);
-      log.info(response);
       return response;
 
     } catch (error) {
