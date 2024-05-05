@@ -3,9 +3,7 @@ import { NotAuthorized } from './error-handler';
 import { AuthPayload } from '@auth/interfaces/auth.interface';
 import JWT from 'jsonwebtoken';
 import { config } from '@root/config';
-import Logger from 'bunyan';
 
-const log: Logger = config.createLogger('authMiddleware');
 export class AuthMiddleWare {
   public verifyUser(req: Request, res: Response, next: NextFunction) {
     if (!req.session?.jwt) {
@@ -15,8 +13,6 @@ export class AuthMiddleWare {
     try {
       const payload: AuthPayload = JWT.verify(req.session?.jwt, config.JWT_TOKEN!) as AuthPayload;
       req.currentUser = payload;
-      log.info('User');
-
     } catch (error) {
       throw new NotAuthorized('Token is expired. Please login again');
     }

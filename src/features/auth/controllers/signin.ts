@@ -40,12 +40,12 @@ export class SignIn {
     );
     const userDocument: IUserDocument = {
       ...user,
-      authId: existingUser!._id,
-      username: existingUser!.username,
-      email: existingUser!.email,
-      avatarColor: existingUser!.avatarColor,
-      uId: existingUser!.uId,
-      createdAt: existingUser!.createdAt
+      authId: existingUser._id,
+      username: existingUser.username,
+      email: existingUser.email,
+      avatarColor: existingUser.avatarColor,
+      uId: existingUser.uId,
+      createdAt: existingUser.createdAt
     } as IUserDocument;
     req.session = { jwt: userJwt };
     res.status(HTTP_STATUS.OK).json({ message: 'Login Successfully', user: userDocument, token: userJwt });
