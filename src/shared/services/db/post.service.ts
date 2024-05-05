@@ -29,6 +29,15 @@ export class PostService {
 
   }
 
+  public async updatePost(postId: string, updatedPost: IPostDocument): Promise<void> {
+    const post: IPostDocument | null = await PostModel.findById(postId);
+    if (!post) {
+      throw new Error('Post not found');
+    }
+    await PostModel.updateOne({ _id: postId }, { $set: updatedPost });
+
+  }
+
 
   public async getPosts(query: IGetPostsQuery, skip: number, limit: number, sort: Record<string, 1 | -1>): Promise<IPostDocument[]> {
     try {
@@ -50,6 +59,7 @@ export class PostService {
       throw error;
     }
   }
+
 
   public async postsCount(): Promise<number> {
     try {

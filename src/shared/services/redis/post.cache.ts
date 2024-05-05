@@ -37,44 +37,26 @@ export class PostCache extends BaseCache {
       createdAt
     } = createdPost;
 
-    const firstList: string[] = [
-      '_id',
-      `${_id}`,
-      'userId',
-      `${userId}`,
-      'username',
-      `${username}`,
-      'email',
-      `${email}`,
-      'avatarColor',
-      `${avatarColor}`,
-      'profilePicture',
-      `${profilePicture}`,
-      'post',
-      `${post}`,
-      'bgColor',
-      `${bgColor}`,
-      'feelings',
-      `${feelings}`,
-      'gifUrl',
-      `${gifUrl}`,
-      'privacy',
-      `${privacy}`,
-    ];
-    const secondList: string[] = [
-      'reactions',
-      `${JSON.stringify(reactions)}`,
-      'commentsCount',
-      `${commentsCount}`,
-      'imgVersion',
-      `${imgVersion}`,
-      'imgId',
-      `${imgId}`,
-      'createdAt',
-      `${createdAt}`
-    ];
+    const dataToSave = {
+      '_id': `${_id}`,
+      'userId': `${userId}`,
+      'username': `${username}`,
+      'email': `${email}`,
+      'avatarColor': `${avatarColor}`,
+      'profilePicture': `${profilePicture}`,
+      'post': `${post}`,
+      'bgColor': `${bgColor}`,
+      'feelings': `${feelings}`,
+      'gifUrl': `${gifUrl}`,
+      'privacy': `${privacy}`,
+      'reactions': `${JSON.stringify(reactions)}`,
+      'commentsCount': `${commentsCount}`,
+      'imgVersion': `${imgVersion}`,
+      'imgId': `${imgId}`,
+      'createdAt': `${createdAt}`
 
-    const dataToSave = [...firstList, ...secondList,];
+    };
+
     try {
       if (!this.client.isOpen) {
         await this.client.connect();
@@ -82,9 +64,12 @@ export class PostCache extends BaseCache {
       const postsCount: string[] = await this.client.HMGET(`users:${currentUserId}`, 'postsCount');
       const multi: ReturnType<typeof this.client.multi> = this.client.multi();
       multi.ZADD('post', { score: parseInt(uId, 10), value: `${key}` });
-      multi.HSET(`posts:${key}`, dataToSave);
+      for (const [itemKey, itemValue] of Object.entries(dataToSave)) {
+        multi.HSET(`posts:${key}`, `${itemKey}`, `${itemValue}`);
+      }
+
       const count = parseInt(postsCount[0], 10) + 1;
-      multi.HSET(`users:${currentUserId}`, ['postsCount', `${count}`]);
+      multi.HSET(`users:${currentUserId}`, 'postsCount', `${count}`);
 
       await multi.exec();
 
@@ -210,12 +195,49 @@ export class PostCache extends BaseCache {
       multi.DEL(`reactions:${key}`);
       multi.DEL(`comments:${key}`);
       const count = parseInt(postsCount[0], 10) - 1;
-      multi.HSET(`users:${currentUserId}`, ['postsCount', `${count}`]);
+      multi.HSET(`users:${currentUserId}`, 'postsCount', `${count}`);
       await multi.exec();
     } catch (error) {
       log.error(error);
       throw new ServerError('Server Error. Please Try Again');
     }
+  }
+  public async updatePostInCache(key: string, updatePost: IPostDocument): Promise<IPostDocument> {
+    const { post, bgColor, feelings, privacy, gifUrl, imgVersion, imgId, profilePicture, } = updatePost;
+    if (!this.client.isOpen) {
+      await this.client.connect();
+    }
+
+    const dataToSave = {
+      'post': `${post}`,
+      'feelings': `${feelings}`,
+      'privacy': `${privacy}`,
+      'gifUrl': `${gifUrl}`,
+      'bgColor': `${bgColor}`,
+      'imgVersion': `${imgVersion}`,
+      'imgId': `${imgId}`,
+      'profilePicture': `${profilePicture}`
+    };
+    try {
+      for (const [itemKey, itemValue] of Object.entries(dataToSave)) {
+        await this.client.HSET(`posts:${key}`, `${itemKey}`, `${itemValue}`);
+      }
+      const multi: ReturnType<typeof this.client.multi> = this.client.multi();
+      multi.HGETALL(`posts:${key}`);
+      const result: PostCacheMultiType = await multi.exec() as PostCacheMultiType;
+      const postReply = result as IPostDocument[];
+      postReply[0].commentsCount = Helpers.parseJSON(`${postReply[0].commentsCount}`) as number;
+      postReply[0].reactions = Helpers.parseJSON(`${postReply[0].reactions}`) as IReactions;
+      postReply[0].createdAt = new Date(Helpers.parseJSON(`${postReply[0].createdAt}`));
+
+      return postReply[0];
+    } catch (error) {
+      log.error(error);
+      throw new ServerError('Server Error. Please Try Again');
+    }
+
+
+
   }
 }
 
