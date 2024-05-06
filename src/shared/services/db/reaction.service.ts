@@ -1,11 +1,13 @@
 import { userCache } from '@auth/controllers/current-user';
 import { ServerError } from '@global/helpers/error-handler';
 import { PostModel } from '@post/models/post.schema';
-import { IReactionDocument, IReactionJob } from '@reaction/interfaces/reaction.interface';
+import { IQueryReaction, IReactionDocument, IReactionJob } from '@reaction/interfaces/reaction.interface';
 import { ReactionModel } from '@reaction/models/reaction.schema';
 import Logger from 'bunyan';
 import { config } from '@root/config';
 import { omit } from 'lodash';
+import mongoose from 'mongoose';
+import { Helpers } from '@global/helpers/helpers';
 const log: Logger = config.createLogger('reactionService');
 
 class ReactionService {
@@ -36,6 +38,39 @@ class ReactionService {
     } catch (error) {
       throw new ServerError('Server Error. Please Try Again');
     }
+  }
+
+  public async getPostReactions(query: IQueryReaction, sort: Record<string, 1 | -1>): Promise<[IReactionDocument[], number]> {
+    try {
+      const reactions: IReactionDocument[] = await ReactionModel.aggregate([
+        { $match: query },
+        { $sort: sort }
+      ]);
+      return [reactions, reactions.length];
+    } catch (error) {
+      throw new ServerError('Server Error. Please Try Again');
+    }
+  }
+  public async getSinglePostReactionsbyUsername(postId: string, username: string): Promise<[IReactionDocument, number] | []> {
+    try {
+      const reactions: IReactionDocument[] = await ReactionModel.aggregate([
+        { $match: { postId: new mongoose.Types.ObjectId(postId), username: Helpers.firstLetterUppercase(username) } },
+      ]);
+      return reactions.length ? [reactions[0], 1] : [];
+    } catch (error) {
+      throw new ServerError('Server Error. Please Try Again');
+    }
+  }
+  public async getReactionsByUsername(username: string): Promise<IReactionDocument[] | []> {
+    try {
+      const reactions: IReactionDocument[] = await ReactionModel.aggregate([
+        { $match: { username: Helpers.firstLetterUppercase(username) } },
+      ]);
+      return reactions;
+    } catch (error) {
+      throw new ServerError('Server Error. Please Try Again');
+    }
+
   }
 
 

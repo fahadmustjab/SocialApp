@@ -57,5 +57,41 @@ export class ReactionCache extends BaseCache {
       return listItem.username === username;
     });
   }
+
+  public async getReactionsFromCache(postId: string): Promise<[IReactionDocument[], number]> {
+    try {
+      if (!this.client.isOpen) {
+        await this.client.connect();
+      }
+      const reactionsCount: number = await this.client.LLEN(`reactions:${postId}`);
+      const response: string[] = await this.client.LRANGE(`reactions:${postId}`, 0, -1);
+      const list: IReactionDocument[] = [];
+      for (const reply of response) {
+        list.push(Helpers.parseJSON(reply));
+      }
+      return response.length > 0 ? [list, reactionsCount] : [[], 0];
+
+    } catch (error) {
+      throw new ServerError('Server Error. Please Try Again');
+    }
+  }
+  public async getSingleReactionOfUser(postId: string, username: string): Promise<[IReactionDocument | null, number]> {
+    try {
+      if (!this.client.isOpen) {
+        await this.client.connect();
+      }
+      const response: string[] = await this.client.LRANGE(`reactions:${postId}`, 0, -1);
+      const list: IReactionDocument[] = [];
+      for (const reply of response) {
+        list.push(Helpers.parseJSON(reply));
+      }
+      const userReaction: IReactionDocument = list.find((reaction: IReactionDocument) => (reaction?.username === Helpers.firstLetterUppercase(username) && reaction?.postId === postId)) as IReactionDocument;
+      return userReaction ? [userReaction, 1] : [null, 0];
+
+    } catch (error) {
+      throw new ServerError('Server Error. Please Try Again');
+    }
+  }
+
 }
 
