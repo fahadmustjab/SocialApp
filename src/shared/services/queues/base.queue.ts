@@ -8,9 +8,10 @@ import { IAuthJob } from '@auth/interfaces/auth.interface';
 import { IPostJobData } from '@post/interfaces/post.interface';
 import { IEmailJob } from '@user/interfaces/user.interface';
 import { IReactionJob } from '@reaction/interfaces/reaction.interface';
+import { ICommentJob } from '@comment/interfaces/comment.interface';
 
 let bullAdapters: BullAdapter[] = [];
-type IBaseJobData = IEmailJob | IAuthJob | IPostJobData | IReactionJob;
+type IBaseJobData = IEmailJob | IAuthJob | IPostJobData | IReactionJob | ICommentJob;
 export let serverAdapter: ExpressAdapter;
 
 export abstract class BaseQueue {
