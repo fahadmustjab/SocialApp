@@ -17,6 +17,7 @@ import { SocketIOHandler } from '@socket/post';
 import 'express-async-errors';
 const SERVER_PORT = 5000;
 import 'express-async-errors';
+import { SocketIOFollowerHandler } from '@socket/follower';
 
 const log: Logger = config.createLogger('server');
 export class ChatServer {
@@ -113,6 +114,8 @@ export class ChatServer {
 
   private socketIOConnections(io: Server): void {
     const postSocket: SocketIOHandler = new SocketIOHandler(io);
+    const followerSocket: SocketIOFollowerHandler = new SocketIOFollowerHandler(io);
+    followerSocket.listen();
     postSocket.listen();
   }
 }
