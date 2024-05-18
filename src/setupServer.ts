@@ -16,7 +16,6 @@ import { CustomError, IErrorResponse } from '@global/helpers/error-handler';
 import { SocketIOHandler } from '@socket/post';
 import 'express-async-errors';
 const SERVER_PORT = 5000;
-import 'express-async-errors';
 import { SocketIOFollowerHandler } from '@socket/follower';
 import { SocketIOUserHandler } from '@socket/user';
 import { SocketIONotificationHandler } from '@socket/notification';
