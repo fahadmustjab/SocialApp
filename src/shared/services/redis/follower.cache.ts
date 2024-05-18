@@ -2,6 +2,9 @@ import { BaseCache } from './base.cache';
 import Logger from 'bunyan';
 import { config } from '@root/config';
 import { ServerError } from '@global/helpers/error-handler';
+import { IFollowerData } from '@follower/interfaces/follower.interface';
+import { userService } from '@service/db/user.service';
+import { IUserDocument } from '@user/interfaces/user.interface';
 const log: Logger = config.createLogger('followerCache');
 
 
@@ -35,13 +38,28 @@ export class FollowerCache extends BaseCache {
       throw new ServerError('Server Error. Please Try Again');
     }
   }
-  public async getFollowerInCache(key: string) {
+  public async getFollowerInCache(key: string): Promise<IFollowerData[]> {
     try {
       if (!this.client.isOpen) {
         await this.client.connect();
       }
       const response: string[] = await this.client.LRANGE(key, 0, -1);
-      return response;
+      const followers: IFollowerData[] = [];
+      for (const item of response) {
+        const user: IUserDocument = await userService.getUserById(item);
+        const data: IFollowerData = {
+          _id: user._id,
+          uId: user.uId,
+          username: user.username,
+          profilePicture: user.profilePicture,
+          followersCount: user.followersCount,
+          followingCount: user.followingCount,
+          postCount: user.postsCount,
+          avatarColor: user.avatarColor,
+        } as IFollowerData;
+        followers.push(data);
+      }
+      return followers;
     } catch (error) {
       log.error(error);
       throw new ServerError('Server Error. Please Try Again');
