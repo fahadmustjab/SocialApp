@@ -5,6 +5,8 @@ import { ServerError } from '@global/helpers/error-handler';
 import { IFollowerData } from '@follower/interfaces/follower.interface';
 import { userService } from '@service/db/user.service';
 import { IUserDocument } from '@user/interfaces/user.interface';
+import { Helpers } from '@global/helpers/helpers';
+import _ from 'lodash';
 const log: Logger = config.createLogger('followerCache');
 
 
@@ -78,5 +80,26 @@ export class FollowerCache extends BaseCache {
     }
   }
 
+  public async updateBlockedUserInCache(key: string, prop: string, value: string, type: 'block' | 'unblock'): Promise<void> {
+    try {
+      if (!this.client.isOpen) {
+        await this.client.connect();
+      }
+      const response: string = await this.client.HGET(`users:${key}`, prop) as string;
+      const multi: ReturnType<typeof this.client.multi> = this.client.multi();
+      let blocked: string[] = Helpers.parseJSON(response) as string[];
+      if (type === 'block') {
+        blocked = [...blocked, value];
+      } else {
+        _.remove(blocked, (item) => item === value);
+        blocked = [...blocked];
+      }
+      multi.HSET(`users:${key}`, prop, JSON.stringify(blocked));
+      await multi.exec();
+    } catch (error) {
+      log.error(error);
+      throw new ServerError('Server Error. Please Try Again');
+    }
+  }
 }
 
