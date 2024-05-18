@@ -14,7 +14,6 @@ class CommentRoute {
 
     this.router.post('/post/comment', authMiddleware.checkAuthentication, AddComment.prototype.post);
 
-
     return this.router;
   }
 

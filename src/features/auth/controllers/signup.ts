@@ -13,7 +13,6 @@ import HTTP_STATUS from 'http-status-codes';
 import { UserCache } from '@service/redis/user.cache';
 import Logger from 'bunyan';
 import { config } from '@root/config';
-import { omit } from 'lodash';
 import { authQueue } from '@service/queues/auth.queue';
 import { userQueue } from '@service/queues/user.queue';
 import JWT from 'jsonwebtoken';
@@ -50,7 +49,6 @@ export class SignUp {
     log.info(result?.secure_url);
     userDataForCache.profilePicture = result.secure_url;
     await userCache.saveUserToCache(`${userObjectId}`, uId, userDataForCache);
-    omit(userDataForCache, ['uId', 'username', 'email', 'avatarColor', 'password']);
     authQueue.addAuthUserJob('addAuthUserToDB', { value: authData });
     userQueue.addUserJob('addUserToDB', { value: userDataForCache });
 
