@@ -16,9 +16,9 @@ import { CustomError, IErrorResponse } from '@global/helpers/error-handler';
 import { SocketIOHandler } from '@socket/post';
 import 'express-async-errors';
 const SERVER_PORT = 5000;
-import 'express-async-errors';
 import { SocketIOFollowerHandler } from '@socket/follower';
 import { SocketIOUserHandler } from '@socket/user';
+import { SocketIONotificationHandler } from '@socket/notification';
 
 const log: Logger = config.createLogger('server');
 export class ChatServer {
@@ -117,6 +117,8 @@ export class ChatServer {
     const postSocket: SocketIOHandler = new SocketIOHandler(io);
     const followerSocket: SocketIOFollowerHandler = new SocketIOFollowerHandler(io);
     const userSocket: SocketIOUserHandler = new SocketIOUserHandler(io);
+    const notificationScoket: SocketIONotificationHandler = new SocketIONotificationHandler();
+    notificationScoket.listen(io);
     followerSocket.listen();
     postSocket.listen();
     userSocket.listen();

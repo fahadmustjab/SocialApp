@@ -15,18 +15,18 @@ export class FollowerCache extends BaseCache {
     super('followerCache');
   }
   public async saveFollowerToCache(key: string, value: string): Promise<void> {
-
     try {
       if (!this.client.isOpen) {
         await this.client.connect();
       }
-      await this.client.LPUSH(key, value);
-
+      const list = await this.client.LRANGE(key, 0, -1);
+      if (!list.includes(value)) {
+        await this.client.LPUSH(key, value);
+      }
     } catch (error) {
       log.error(error);
       throw new ServerError('Server Error. Please Try Again');
     }
-
   }
 
   public async removeFollowerFromCache(key: string, value: string): Promise<void> {

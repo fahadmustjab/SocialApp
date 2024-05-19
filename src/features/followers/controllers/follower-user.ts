@@ -11,9 +11,10 @@ import { followerQueue } from '@service/queues/follower.queue';
 
 const followerCache: FollowerCache = new FollowerCache();
 export class AddFollower {
-  public async addFollower(req: Request, res: Response): Promise<void> {
+  public async addFollower(req: Request, res: Response) {
     try {
       const { followerId } = req.params;
+
       const followersCount: Promise<void> = followerCache.updateFollowersCountInCache(`${followerId}`, 'followersCount', 1);
       const followeeCount: Promise<void> = followerCache.updateFollowersCountInCache(`${req.currentUser!.userId}`, 'followingCount', 1);
       await Promise.all([followersCount, followeeCount]);

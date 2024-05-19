@@ -8,22 +8,59 @@ import { config } from '@root/config';
 import { omit } from 'lodash';
 import mongoose from 'mongoose';
 import { Helpers } from '@global/helpers/helpers';
+import { IUserDocument } from '@user/interfaces/user.interface';
+import { IPostDocument } from '@post/interfaces/post.interface';
+import { INotificationDocument, INotificationTemplate } from '@notification/interfaces/notification.interface';
+import { NotificationModel } from '@notification/models/notification.schema';
+import { socketIONotificationObject } from '@socket/notification';
+import { notificationsTemplate } from '@service/emails/templates/notifications/notifications-template';
+import { emailQueue } from '@service/queues/email.queue';
 const log: Logger = config.createLogger('reactionService');
 
 class ReactionService {
   public async create(reaction: IReactionJob): Promise<void> {
     try {
-      const { postId, type, reactionObject, previousReaction, username, userTo } = reaction;
+      const { postId, type, reactionObject, previousReaction, username, userTo, userFrom } = reaction;
       let updatedReactionObject: IReactionDocument = reactionObject as IReactionDocument;
       if (previousReaction) {
         updatedReactionObject = omit(reactionObject, ['_id']);
       }
       log.info(`Adding ${type} reaction to post ${postId} by ${username}`);
-      await Promise.all([
+
+      const response: [IUserDocument, IReactionDocument, IPostDocument] = await Promise.all([
         userCache.getUserFromCache(`${userTo}`),
         ReactionModel.replaceOne({ postId, type: previousReaction, username }, updatedReactionObject, { upsert: true }),
         PostModel.findOneAndUpdate({ _id: postId }, { $inc: { [`reactions.${previousReaction}`]: -1, [`reactions.${type}`]: 1 } }, { new: true })
-      ]);
+      ]) as unknown as [IUserDocument, IReactionDocument, IPostDocument];
+
+      if (response[0]?.notifications.reactions && userFrom !== userTo) {
+        const notificationModel: INotificationDocument = new NotificationModel();
+        const notifications = notificationModel.insertNotification({
+          userFrom: userFrom as string,
+          userTo: userTo as string,
+          message: `${username} reacted on your post.`,
+          notificationType: 'reactions',
+          entityId: new mongoose.Types.ObjectId(postId),
+          createdItemId: new mongoose.Types.ObjectId(response[1]._id),
+          createdAt: new Date(),
+          comment: '',
+          post: response[2]?.post ?? '',
+          imgVersion: response[2]?.imgVersion ?? '',
+          gifUrl: response[2]?.gifUrl ?? '',
+          imgId: response[2]?.imgId ?? '',
+          reaction: type!
+        });
+        //send to client with socketIo
+        socketIONotificationObject.emit('insert notification', notifications, { userTo });
+        //send email job
+        const notificationTemplate: INotificationTemplate = {
+          username: response[0].username!,
+          message: `${username} reacted on your post.`,
+          header: 'Reaction Notification'
+        };
+        const template: string = notificationsTemplate.notificationMessageTemplate(notificationTemplate);
+        emailQueue.addEmailJob('reactionsEmail', { receiverEmail: response[0].email!, subject: 'Post notifications', template });
+      }
     } catch (error) {
       throw new ServerError(`Server Error. Please Try Again: ${error}`);
     }
