@@ -1,4 +1,4 @@
-import { ServerError, ServiceError } from '@global/helpers/error-handler';
+import { ServerError } from '@global/helpers/error-handler';
 import mongoose, { ObjectId, Query } from 'mongoose';
 import { FollowerModel } from '@follower/models/follower.schema';
 import { UserModel } from '@user/schema/user.schema';
