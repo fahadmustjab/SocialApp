@@ -21,7 +21,7 @@ import { SocketIOUserHandler } from '@socket/user';
 import { SocketIONotificationHandler } from '@socket/notification';
 
 const log: Logger = config.createLogger('server');
-export class ChatServer {
+export class AppServer {
   private app: Application;
   constructor(app: Application) {
     this.app = app;
