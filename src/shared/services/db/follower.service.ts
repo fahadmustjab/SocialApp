@@ -1,4 +1,4 @@
-import { ServerError } from '@global/helpers/error-handler';
+import { ServerError, ServiceError } from '@global/helpers/error-handler';
 import mongoose, { ObjectId, Query } from 'mongoose';
 import { FollowerModel } from '@follower/models/follower.schema';
 import { UserModel } from '@user/schema/user.schema';
@@ -11,11 +11,16 @@ import { NotificationModel } from '@notification/models/notification.schema';
 import { notificationsTemplate } from '@service/emails/templates/notifications/notifications-template';
 import { emailQueue } from '@service/queues/email.queue';
 import { socketIONotificationObject } from '@socket/notification';
+import Logger from 'bunyan';
+import { config } from '@root/config';
+const log: Logger = config.createLogger('followerService');
+
 class FollowerService {
   public async addFollowerToDB(userId: string, followeeId: string, username: string, followerDocumentId: ObjectId): Promise<void> {
     try {
       const followerObjectId = new mongoose.Types.ObjectId(userId);
       const followeeObjectId = new mongoose.Types.ObjectId(followeeId);
+
       const following = await FollowerModel.create({ _id: followerDocumentId, followerId: followerObjectId, followeeId: followeeObjectId });
       const user: Promise<BulkWriteResult> = UserModel.bulkWrite([{
         updateOne: {
@@ -58,8 +63,14 @@ class FollowerService {
         emailQueue.addEmailJob('followerEmail', { receiverEmail: response[1].email!, subject: `${username} started following you`, template });
       }
     } catch (error) {
-      throw new ServerError(`Server Error. Please Try Again: ${error}`);
+      log.error(error);
+      throw error;
     }
+  }
+  //make a function to check if
+  public async checkIfFollowing(userId: string, followeeId: string): Promise<IFollowerDocument | null> {
+    return await FollowerModel.findOne({ followeeId, followerId: userId });
+
   }
 
   public async removeFollowerFromDB(followerId: string, followeeId: string,): Promise<void> {

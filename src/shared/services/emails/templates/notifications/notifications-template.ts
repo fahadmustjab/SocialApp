@@ -8,7 +8,8 @@ class NotificationsTemplate {
     return ejs.render(fs.readFileSync(__dirname + '/notifications-template.ejs', 'utf8'), {
       username,
       message,
-      header
+      header,
+      image_url: 'https://w7.pngwing.com/pngs/120/102/png-transparent-padlock-logo-computer-icons-padlock-technic-logo-password-lock.png'
     });
 
 
