@@ -16,17 +16,13 @@ import { CustomError, IErrorResponse } from '@global/helpers/error-handler';
 import { SocketIOHandler } from '@socket/post';
 import 'express-async-errors';
 const SERVER_PORT = 5000;
-import 'express-async-errors';
 import { SocketIOFollowerHandler } from '@socket/follower';
 import { SocketIOUserHandler } from '@socket/user';
-<<<<<<< Updated upstream
-=======
-import { SocketIONotificationHandler } from '@socket/notification';
 import { SocketIOImageHandler } from '@socket/image';
->>>>>>> Stashed changes
+import { SocketIONotificationHandler } from '@socket/notification';
 
 const log: Logger = config.createLogger('server');
-export class ChatServer {
+export class AppServer {
   private app: Application;
   constructor(app: Application) {
     this.app = app;
@@ -124,14 +120,11 @@ export class ChatServer {
     const imageSocket: SocketIOImageHandler = new SocketIOImageHandler();
 
     const userSocket: SocketIOUserHandler = new SocketIOUserHandler(io);
-<<<<<<< Updated upstream
-=======
     const notificationScoket: SocketIONotificationHandler = new SocketIONotificationHandler();
 
     notificationScoket.listen(io);
     imageSocket.listen(io);
 
->>>>>>> Stashed changes
     followerSocket.listen();
     postSocket.listen();
     userSocket.listen();

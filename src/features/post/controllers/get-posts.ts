@@ -33,16 +33,13 @@ export class GetPosts {
     const newSkip: number = skip === 0 ? skip : skip + 1;
 
     const cachedPosts: IPostDocument[] = await postCache.getPostsWithImagesFromCache('post', newSkip, limit);
-    let totalPosts = 0;
     let posts = [];
     if (cachedPosts.length) {
       posts = cachedPosts;
-      totalPosts = await postCache.getTotalPostsFromCache();
     } else {
       posts = await postService.getPosts({ imgId: '$ne', gifUrl: '$ne' }, skip, limit, { createdAt: -1 });
-      totalPosts = await postService.postsCount();
     }
 
-    res.status(HTTP_STATUS.OK).json({ posts, totalPosts });
+    res.status(HTTP_STATUS.OK).json({ message: 'All images with posts', posts });
   }
 }

@@ -5,12 +5,23 @@ import { UserModel } from '@user/schema/user.schema';
 import { BulkWriteResult } from 'mongodb';
 import { IQueryComplete, IQueryDeleted } from '@post/interfaces/post.interface';
 import { IFollowerData, IFollowerDocument } from '@follower/interfaces/follower.interface';
+import { IUserDocument } from '@user/interfaces/user.interface';
+import { INotificationDocument, INotificationTemplate } from '@notification/interfaces/notification.interface';
+import { NotificationModel } from '@notification/models/notification.schema';
+import { notificationsTemplate } from '@service/emails/templates/notifications/notifications-template';
+import { emailQueue } from '@service/queues/email.queue';
+import { socketIONotificationObject } from '@socket/notification';
+import Logger from 'bunyan';
+import { config } from '@root/config';
+const log: Logger = config.createLogger('followerService');
+
 class FollowerService {
   public async addFollowerToDB(userId: string, followeeId: string, username: string, followerDocumentId: ObjectId): Promise<void> {
     try {
       const followerObjectId = new mongoose.Types.ObjectId(userId);
       const followeeObjectId = new mongoose.Types.ObjectId(followeeId);
-      await FollowerModel.create({ _id: followerDocumentId, followerId: followerObjectId, followeeId: followeeObjectId });
+
+      const following = await FollowerModel.create({ _id: followerDocumentId, followerId: followerObjectId, followeeId: followeeObjectId });
       const user: Promise<BulkWriteResult> = UserModel.bulkWrite([{
         updateOne: {
           filter: { _id: followerObjectId },
@@ -22,10 +33,44 @@ class FollowerService {
           update: { $inc: { followersCount: 1 } }
         }
       }]);
-      await Promise.all([user, UserModel.findOne({ _id: followeeId })]);
+      const response: [BulkWriteResult, IUserDocument | null] = await Promise.all([user, UserModel.findOne({ _id: followeeId })]);
+      if (response[1]?.notifications.follows && userId !== followeeId) {
+        const notificationModel: INotificationDocument = new NotificationModel();
+        const notifications = notificationModel.insertNotification({
+          userFrom: userId,
+          userTo: followeeId,
+          message: `${username} started following you.`,
+          notificationType: 'follow',
+          entityId: new mongoose.Types.ObjectId(userId),
+          createdItemId: new mongoose.Types.ObjectId(following._id),
+          createdAt: new Date(),
+          comment: '',
+          post: '',
+          imgVersion: '',
+          gifUrl: '',
+          imgId: '',
+          reaction: ''
+        });
+        //send to client with socketIo
+        socketIONotificationObject.emit('insert notification', notifications, { userTo: followeeId });
+        //send email job
+        const notificationTemplate: INotificationTemplate = {
+          username,
+          message: `${username} started following you.`,
+          header: 'Follow Notification'
+        };
+        const template: string = notificationsTemplate.notificationMessageTemplate(notificationTemplate);
+        emailQueue.addEmailJob('followerEmail', { receiverEmail: response[1].email!, subject: `${username} started following you`, template });
+      }
     } catch (error) {
-      throw new ServerError(`Server Error. Please Try Again: ${error}`);
+      log.error(error);
+      throw error;
     }
+  }
+  //make a function to check if
+  public async checkIfFollowing(userId: string, followeeId: string): Promise<IFollowerDocument | null> {
+    return await FollowerModel.findOne({ followeeId, followerId: userId });
+
   }
 
   public async removeFollowerFromDB(followerId: string, followeeId: string,): Promise<void> {

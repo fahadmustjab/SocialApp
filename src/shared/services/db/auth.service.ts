@@ -12,6 +12,7 @@ export class AuthService {
       await AuthModel.create(data);
     } catch (error) {
       log.error(error);
+      throw error;
     }
   }
 
@@ -20,6 +21,8 @@ export class AuthService {
       return await AuthModel.findOneAndUpdate({ _id: authId }, { passwordResetToken: token, passwordResetExpires: tokenExpiration });
     } catch (error) {
       log.error(error);
+      throw error;
+
     }
   }
 

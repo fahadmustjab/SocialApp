@@ -10,21 +10,17 @@ import { IEmailJob } from '@user/interfaces/user.interface';
 import { IReactionJob } from '@reaction/interfaces/reaction.interface';
 import { ICommentJob } from '@comment/interfaces/comment.interface';
 import { IBlockedUserJobData, IFollowerJobData } from '@follower/interfaces/follower.interface';
-<<<<<<< Updated upstream
-
-let bullAdapters: BullAdapter[] = [];
-type IBaseJobData = IEmailJob | IAuthJob | IPostJobData | IReactionJob | ICommentJob | IFollowerJobData | IBlockedUserJobData;
-=======
 import { INotificationJobData } from '@notification/interfaces/notification.interface';
 import { EventEmitter } from 'events';
-import { IFileImageJobData } from '@image/interfaces/image.interface';
+
 
 let bullAdapters: BullAdapter[] = [];
-type IBaseJobData = IEmailJob | IAuthJob | IPostJobData | IReactionJob | ICommentJob | IFollowerJobData | IBlockedUserJobData | INotificationJobData | IFileImageJobData;
->>>>>>> Stashed changes
+type IBaseJobData = IEmailJob | IAuthJob | IPostJobData | IReactionJob | ICommentJob | IFollowerJobData | IBlockedUserJobData | INotificationJobData;
 export let serverAdapter: ExpressAdapter;
 
 export abstract class BaseQueue {
+  public events: EventEmitter;
+
   queue: Queue.Queue;
   log: Logger;
   constructor(queueName: string) {
@@ -33,6 +29,8 @@ export abstract class BaseQueue {
     bullAdapters = [...new Set(bullAdapters)];
     serverAdapter = new ExpressAdapter();
     serverAdapter.setBasePath('/queues');
+    this.events = new EventEmitter();
+
 
     createBullBoard({
       queues: bullAdapters,
@@ -50,6 +48,10 @@ export abstract class BaseQueue {
     this.queue.on('global:stalled', (jobId: string) => {
       this.log.info(`Job with ${jobId} is stalled`);
     });
+    this.queue.on('failed', (job, err) => {
+      this.events.emit('jobFailed', err);
+    });
+
   }
 
   protected addJob(name: string, data: IBaseJobData) {
