@@ -31,6 +31,15 @@ export class UserService {
       throw error;
     }
   }
+  public async deleteBgImageFromDB(userId: string): Promise<void> {
+    try {
+      await UserModel.updateOne({ _id: userId }, { $set: { bgImageId: '', bgImageVersion: '' } }).exec();
+
+    } catch (error) {
+      log.error(error);
+      throw error;
+    }
+  }
   public async getUserByAuthId(authId: string): Promise<IUserDocument> {
     try {
       const [users] = await UserModel.aggregate([

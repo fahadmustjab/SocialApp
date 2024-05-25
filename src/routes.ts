@@ -3,6 +3,11 @@ import { currentRoutes } from '@auth/routes/currentRoutes';
 import { commentRoute } from '@comment/routes/commentRoute';
 import { followerRoute } from '@follower/routes/followerRoutes';
 import { authMiddleware } from '@global/helpers/auth-middleware';
+<<<<<<< Updated upstream
+=======
+import { imageRoute } from '@image/routes/imageRoutes';
+import { notificationRoutes } from '@notification/routes/notificationRoutes';
+>>>>>>> Stashed changes
 import { postRoutes } from '@post/routes/postRoutes';
 import { reactionRoute } from '@reaction/routes/reactionRoutes';
 import { serverAdapter } from '@service/queues/base.queue';
@@ -21,6 +26,11 @@ export default (app: Application) => {
     app.use(BASE_PATH, authMiddleware.verifyUser, reactionRoute.routes());
     app.use(BASE_PATH, authMiddleware.verifyUser, commentRoute.routes());
     app.use(BASE_PATH, authMiddleware.verifyUser, followerRoute.routes());
+<<<<<<< Updated upstream
+=======
+    app.use(BASE_PATH, authMiddleware.verifyUser, notificationRoutes.routes());
+    app.use(BASE_PATH, authMiddleware.verifyUser, imageRoute.routes());
+>>>>>>> Stashed changes
 
   };
   routes();

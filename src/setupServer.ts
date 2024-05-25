@@ -19,6 +19,11 @@ const SERVER_PORT = 5000;
 import 'express-async-errors';
 import { SocketIOFollowerHandler } from '@socket/follower';
 import { SocketIOUserHandler } from '@socket/user';
+<<<<<<< Updated upstream
+=======
+import { SocketIONotificationHandler } from '@socket/notification';
+import { SocketIOImageHandler } from '@socket/image';
+>>>>>>> Stashed changes
 
 const log: Logger = config.createLogger('server');
 export class ChatServer {
@@ -116,7 +121,17 @@ export class ChatServer {
   private socketIOConnections(io: Server): void {
     const postSocket: SocketIOHandler = new SocketIOHandler(io);
     const followerSocket: SocketIOFollowerHandler = new SocketIOFollowerHandler(io);
+    const imageSocket: SocketIOImageHandler = new SocketIOImageHandler();
+
     const userSocket: SocketIOUserHandler = new SocketIOUserHandler(io);
+<<<<<<< Updated upstream
+=======
+    const notificationScoket: SocketIONotificationHandler = new SocketIONotificationHandler();
+
+    notificationScoket.listen(io);
+    imageSocket.listen(io);
+
+>>>>>>> Stashed changes
     followerSocket.listen();
     postSocket.listen();
     userSocket.listen();

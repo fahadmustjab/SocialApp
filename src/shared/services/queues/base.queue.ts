@@ -10,9 +10,18 @@ import { IEmailJob } from '@user/interfaces/user.interface';
 import { IReactionJob } from '@reaction/interfaces/reaction.interface';
 import { ICommentJob } from '@comment/interfaces/comment.interface';
 import { IBlockedUserJobData, IFollowerJobData } from '@follower/interfaces/follower.interface';
+<<<<<<< Updated upstream
 
 let bullAdapters: BullAdapter[] = [];
 type IBaseJobData = IEmailJob | IAuthJob | IPostJobData | IReactionJob | ICommentJob | IFollowerJobData | IBlockedUserJobData;
+=======
+import { INotificationJobData } from '@notification/interfaces/notification.interface';
+import { EventEmitter } from 'events';
+import { IFileImageJobData } from '@image/interfaces/image.interface';
+
+let bullAdapters: BullAdapter[] = [];
+type IBaseJobData = IEmailJob | IAuthJob | IPostJobData | IReactionJob | ICommentJob | IFollowerJobData | IBlockedUserJobData | INotificationJobData | IFileImageJobData;
+>>>>>>> Stashed changes
 export let serverAdapter: ExpressAdapter;
 
 export abstract class BaseQueue {
