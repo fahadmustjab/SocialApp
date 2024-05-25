@@ -13,6 +13,7 @@ import { IBlockedUserJobData, IFollowerJobData } from '@follower/interfaces/foll
 import { INotificationJobData } from '@notification/interfaces/notification.interface';
 import { EventEmitter } from 'events';
 
+
 let bullAdapters: BullAdapter[] = [];
 type IBaseJobData = IEmailJob | IAuthJob | IPostJobData | IReactionJob | ICommentJob | IFollowerJobData | IBlockedUserJobData | INotificationJobData;
 export let serverAdapter: ExpressAdapter;

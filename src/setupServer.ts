@@ -18,6 +18,7 @@ import 'express-async-errors';
 const SERVER_PORT = 5000;
 import { SocketIOFollowerHandler } from '@socket/follower';
 import { SocketIOUserHandler } from '@socket/user';
+import { SocketIOImageHandler } from '@socket/image';
 import { SocketIONotificationHandler } from '@socket/notification';
 
 const log: Logger = config.createLogger('server');
@@ -116,9 +117,14 @@ export class AppServer {
   private socketIOConnections(io: Server): void {
     const postSocket: SocketIOHandler = new SocketIOHandler(io);
     const followerSocket: SocketIOFollowerHandler = new SocketIOFollowerHandler(io);
+    const imageSocket: SocketIOImageHandler = new SocketIOImageHandler();
+
     const userSocket: SocketIOUserHandler = new SocketIOUserHandler(io);
     const notificationScoket: SocketIONotificationHandler = new SocketIONotificationHandler();
+
     notificationScoket.listen(io);
+    imageSocket.listen(io);
+
     followerSocket.listen();
     postSocket.listen();
     userSocket.listen();
