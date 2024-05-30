@@ -20,6 +20,7 @@ import { SocketIOFollowerHandler } from '@socket/follower';
 import { SocketIOUserHandler } from '@socket/user';
 import { SocketIOImageHandler } from '@socket/image';
 import { SocketIONotificationHandler } from '@socket/notification';
+import { SocketIOChatHandler } from '@socket/chat';
 
 const log: Logger = config.createLogger('server');
 export class AppServer {
@@ -117,10 +118,13 @@ export class AppServer {
   private socketIOConnections(io: Server): void {
     const postSocket: SocketIOHandler = new SocketIOHandler(io);
     const followerSocket: SocketIOFollowerHandler = new SocketIOFollowerHandler(io);
+    const chatSocket: SocketIOChatHandler = new SocketIOChatHandler(io);
+    const userSocket: SocketIOUserHandler = new SocketIOUserHandler(io);
+
+
+    const notificationScoket: SocketIONotificationHandler = new SocketIONotificationHandler();
     const imageSocket: SocketIOImageHandler = new SocketIOImageHandler();
 
-    const userSocket: SocketIOUserHandler = new SocketIOUserHandler(io);
-    const notificationScoket: SocketIONotificationHandler = new SocketIONotificationHandler();
 
     notificationScoket.listen(io);
     imageSocket.listen(io);
@@ -128,6 +132,7 @@ export class AppServer {
     followerSocket.listen();
     postSocket.listen();
     userSocket.listen();
+    chatSocket.listen();
 
   }
 }
