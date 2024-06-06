@@ -12,10 +12,11 @@ import { ICommentJob } from '@comment/interfaces/comment.interface';
 import { IBlockedUserJobData, IFollowerJobData } from '@follower/interfaces/follower.interface';
 import { INotificationJobData } from '@notification/interfaces/notification.interface';
 import { EventEmitter } from 'events';
+import { IMessageData } from '@chat/interfaces/chat.interface';
 
 
 let bullAdapters: BullAdapter[] = [];
-type IBaseJobData = IEmailJob | IAuthJob | IPostJobData | IReactionJob | ICommentJob | IFollowerJobData | IBlockedUserJobData | INotificationJobData;
+type IBaseJobData = IEmailJob | IAuthJob | IPostJobData | IReactionJob | ICommentJob | IFollowerJobData | IBlockedUserJobData | INotificationJobData | IMessageData;
 export let serverAdapter: ExpressAdapter;
 
 export abstract class BaseQueue {
